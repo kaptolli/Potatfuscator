@@ -88,15 +88,18 @@ function hideN(n) {
     const ops = [
         () => {
             const r = Math.floor(Math.random() * 99) + 1;
-            return `(((${n + r})-${r}))`;
+            return `(${n + r}-${r})`;
         },
         () => {
             const r = Math.floor(Math.random() * 20) + 2;
-            return `((${n * r}/${r}))`;
+            return `(${n * r}/${r})`;
         },
         () => {
             const r = Math.floor(Math.random() * 50) + 1;
-            return `((${n}+${r}-${r}))`;
+            return `(${n}+${r}-${r})`;
+        },
+        () => {
+            return `${n}`;
         }
     ];
     return ops[Math.floor(Math.random() * ops.length)]();
@@ -184,10 +187,15 @@ function obfuscate() {
     // --- VM FUNCTION (упрощённая и рабочая версия) ---
     res += `local function ${runF}(t,m,k)`;
     res += `local o="";`;
+    res += `local _k1=k[1];`;
+    res += `local _k2=k[2];`;
+    res += `local _chr=${proxyT}[${hideN(1)}];`;
     res += `for i=1,#m do `;
-    res += `local b=t[m[i]];`;
-    res += `b=b~k[1]~k[2];`;
-    res += `o=o..${proxyT}[${hideN(1)}](b);`;
+    res += `local idx=m[i];`;
+    res += `local b=t[idx];`;
+    res += `local xor1=bit32 and bit32.bxor(b,_k1)or(b~_k1);`;
+    res += `local xor2=bit32 and bit32.bxor(xor1,_k2)or(xor1~_k2);`;
+    res += `o=o.._chr(xor2);`;
     res += `end;`;
     res += `return o;`;
     res += `end;`;
